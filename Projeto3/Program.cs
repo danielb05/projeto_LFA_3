@@ -17,6 +17,12 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
+            Graph g = geraGraficoTeset();
+
+            if (isAFD(g))
+            {
+                Graph g2 = miniminiza(g);
+            }
 
             while (repeatProg)
             {
@@ -455,6 +461,7 @@ namespace Projeto3
             estado.visited = true;
             return estados_tmp;
         }
+
         static void marcarEstadosFinais()
         {
             foreach (Estado estado in estados)
@@ -545,5 +552,106 @@ namespace Projeto3
                 Console.WriteLine("------------------------------------------------");
             }
         }
+
+        static Graph geraGraficoTeset()
+        {
+            Graph g = new Graph("Mini");
+
+            Node n0 = new Node();
+            n0.initial = true;
+
+            Node n1 = new Node();
+            Node n2 = new Node();
+            Node n3 = new Node();
+            Node n4 = new Node();
+            n4.final = true;
+            Node n5 = new Node();
+            n5.final = true;
+
+            Edge e = new Edge(n0, n2, 'a');
+            n0.AddEdge(e);
+
+            e = new Edge(n0, n1, 'b');
+            n0.AddEdge(e);
+
+            e = new Edge(n1, n1, 'a');
+            n1.AddEdge(e);
+
+            e = new Edge(n1, n0, 'b');
+            n1.AddEdge(e);
+
+            e = new Edge(n2, n4, 'a');
+            n2.AddEdge(e);
+
+            e = new Edge(n2, n5, 'b');
+            n2.AddEdge(e);
+
+            e = new Edge(n3, n5, 'a');
+            n3.AddEdge(e);
+
+            e = new Edge(n3, n4, 'b');
+            n3.AddEdge(e);
+
+            e = new Edge(n4, n3, 'a');
+            n4.AddEdge(e);
+
+            e = new Edge(n4, n2, 'b');
+            n3.AddEdge(e);
+
+            e = new Edge(n5, n2, 'a');
+            n5.AddEdge(e);
+
+            e = new Edge(n5, n3, 'b');
+            n5.AddEdge(e);
+
+            return g; 
+        }
+
+        // Verifica se o Grafico é um AFD
+        static bool isAFD(Graph g)
+        {
+            return true;
+        }
+
+        // Remove os estados inacessíveis
+        static Graph removeInacessiveis(Graph g)
+        {
+            return g;
+        }
+
+        // Verifica se o Grafico é uma função programa total
+        static bool isTotal(Graph g)
+        {
+            return true;
+        }
+
+        // Todos os estados que não são função programa total devem apontar para o estado d
+        static Graph addEstadoD(Graph g)
+        {
+            Node d = new Node("d");
+            Edge e = new Edge(d, d, ' ');
+            foreach (char c in letras)
+            {
+                e = new Edge(d, d, c);
+                d.AddEdge(e);
+            }
+            g.AddNode(d);
+            return g;
+        }
+
+        //Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
+        static void apontaParaD(Node n)
+        {
+
+        }
+
+        static Graph miniminiza(Graph g)
+        {
+            Graph g2 = new Graph("Minimizado");
+
+            return g2;
+        }
+
+
     }
 }
