@@ -23,6 +23,10 @@ namespace Projeto3
             {
                 Graph g2 = miniminiza(g);
             }
+            else
+            {
+                Console.WriteLine("O gráfico não é um AFD");
+            }
 
             while (repeatProg)
             {
@@ -610,13 +614,72 @@ namespace Projeto3
         // Verifica se o Grafico é um AFD
         static bool isAFD(Graph g)
         {
+            int count = 0;
+            foreach(Node n in g.nodes)
+            {
+                foreach(char c in letras)
+                {
+                    count = 0;
+                    foreach (Edge e in n.edges)
+                    {
+                        // AFDs não possuem transições vazias
+                        if (e.value == ' ')
+                        {
+                            return false;
+                        }
+                        if(e.value == c)
+                        {
+                            count++;
+                        }
+                    }
+                    // AFDs não possuem mais de uma transição num mesmo nó com um mesmo valor
+                    if (count > 1)
+                    {
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
         // Remove os estados inacessíveis
         static Graph removeInacessiveis(Graph g)
         {
+            List<Node> inacessiveis = new List<Node>();
+
+            foreach (Node n in g.nodes)
+            {
+                if (!checkAcessivel(n, g.nodes))
+                {
+                    inacessiveis.Add(n);
+                }
+            }
+
+            g.nodes = g.nodes.Except(inacessiveis).ToList();
             return g;
+        }
+
+
+        // Verifica se um nó é acessível
+        // Retorno => True se acessível e False se não acessível
+        static bool checkAcessivel(Node n, List<Node> nodes)
+        {
+            int count = 0;
+            foreach(Node node in nodes)
+            {
+                foreach(Edge e in node.edges)
+                {
+                    if(e.to.name == n.name)
+                    {
+                        count++;
+                    }
+                }
+            }
+            if(count == 0)
+            {
+                return false;
+            }
+            return true;
         }
 
         // Verifica se o Grafico é uma função programa total
@@ -625,7 +688,7 @@ namespace Projeto3
             return true;
         }
 
-        // Todos os estados que não são função programa total devem apontar para o estado d
+        // Cria estado d
         static Graph addEstadoD(Graph g)
         {
             Node d = new Node("d");
@@ -639,7 +702,8 @@ namespace Projeto3
             return g;
         }
 
-        //Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
+        // Todos os estados que não são função programa total devem apontar para o estado d
+        // Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
         static void apontaParaD(Node n)
         {
 
@@ -648,6 +712,8 @@ namespace Projeto3
         static Graph miniminiza(Graph g)
         {
             Graph g2 = new Graph("Minimizado");
+
+            g2 = removeInacessiveis(g);
 
             return g2;
         }
