@@ -608,16 +608,16 @@ namespace Projeto3
             e = new Edge(n5, n3, 'b');
             n5.AddEdge(e);
 
-            return g; 
+            return g;
         }
 
         // Verifica se o Grafico é um AFD
         static bool isAFD(Graph g)
         {
             int count = 0;
-            foreach(Node n in g.nodes)
+            foreach (Node n in g.nodes)
             {
-                foreach(char c in letras)
+                foreach (char c in letras)
                 {
                     count = 0;
                     foreach (Edge e in n.edges)
@@ -627,7 +627,7 @@ namespace Projeto3
                         {
                             return false;
                         }
-                        if(e.value == c)
+                        if (e.value == c)
                         {
                             count++;
                         }
@@ -665,17 +665,17 @@ namespace Projeto3
         static bool checkAcessivel(Node n, List<Node> nodes)
         {
             int count = 0;
-            foreach(Node node in nodes)
+            foreach (Node node in nodes)
             {
-                foreach(Edge e in node.edges)
+                foreach (Edge e in node.edges)
                 {
-                    if(e.to.name == n.name)
+                    if (e.to.name == n.name)
                     {
                         count++;
                     }
                 }
             }
-            if(count == 0)
+            if (count == 0)
             {
                 return false;
             }
@@ -702,6 +702,12 @@ namespace Projeto3
             return g;
         }
 
+        // Faz um gráfico ser total
+        static Graph makeTotal(Graph g)
+        {
+            return g;
+        }
+
         // Todos os estados que não são função programa total devem apontar para o estado d
         // Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
         static void apontaParaD(Node n)
@@ -709,11 +715,54 @@ namespace Projeto3
 
         }
 
+        // Minimizando o gráfico
         static Graph miniminiza(Graph g)
         {
             Graph g2 = new Graph("Minimizado");
 
+            g = geraGraficoTeset();
+
             g2 = removeInacessiveis(g);
+
+            if (!isTotal(g2))
+            {
+                g2 = makeTotal(g2);
+            }
+
+            List<Node> equivalentes = new List<Node>();
+
+            int[,] matriz = new int[g2.nodes.Count, g2.nodes.Count];
+
+            int i = 0;
+            int j = 0;
+
+            foreach (Node n in g2.nodes)
+            {
+                foreach (Node n2 in g2.nodes)
+                {
+                    // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
+                    if (n.final == n2.final)
+                    {
+                        matriz[i, j] = 1;
+                        matriz[j, i] = 1;
+                    }
+                    else
+                    {
+                        foreach (Edge e in n.edges)
+                        {
+                            foreach (Edge e2 in n2.edges)
+                            {
+                                if (e.to == e2.to && e.value == e2.value)
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                    j++;
+                }
+                i++;
+            }
 
             return g2;
         }
