@@ -21,7 +21,7 @@ namespace Projeto3
 
             if (isAFD(g))
             {
-                Graph g2 = miniminiza(g);
+                miniminiza(g);
             }
             else
             {
@@ -35,7 +35,7 @@ namespace Projeto3
 
                 regex = receive();
                 string alfabeto = Regex.Replace(regex, "[^A-Za-z0-9]+", "");
-                alfabeto += " ";
+                //alfabeto += " ";
                 Console.WriteLine(alfabeto);
                 string posfixa = Converter(regex);
 
@@ -599,14 +599,24 @@ namespace Projeto3
             e = new Edge(n4, n3, 'a');
             n4.AddEdge(e);
 
-            e = new Edge(n4, n2, 'b');
-            n3.AddEdge(e);
+            //e = new Edge(n4, n2, 'b');
+            //n4.AddEdge(e);
 
             e = new Edge(n5, n2, 'a');
             n5.AddEdge(e);
 
             e = new Edge(n5, n3, 'b');
             n5.AddEdge(e);
+
+            g.AddNode(n0);
+            g.AddNode(n1);
+            g.AddNode(n2);
+            g.AddNode(n3);
+            g.AddNode(n4);
+            g.AddNode(n5);
+
+            letras.Add('a');
+            letras.Add('b');
 
             return g; 
         }
@@ -643,7 +653,7 @@ namespace Projeto3
         }
 
         // Remove os estados inacessíveis
-        static Graph removeInacessiveis(Graph g)
+        static void removeInacessiveis(Graph g)
         {
             List<Node> inacessiveis = new List<Node>();
 
@@ -656,7 +666,6 @@ namespace Projeto3
             }
 
             g.nodes = g.nodes.Except(inacessiveis).ToList();
-            return g;
         }
 
 
@@ -675,49 +684,61 @@ namespace Projeto3
                     }
                 }
             }
-            if(count == 0)
-            {
-                return false;
-            }
-            return true;
+            return count >= 0;
         }
 
         // Verifica se o Grafico é uma função programa total
-        static bool isTotal(Graph g)
+        // Retorna um dicionario com o nó como chave a letra faltando como valor
+        static Dictionary<Node, char> isTotal(Graph g)
         {
-            return true;
+            var nodes = new Dictionary<Node, char>();
+            foreach (Node n in g.nodes)
+            {
+                foreach(char c in letras)
+                {
+                    if((n.edges.Find(e => e.value == c)) == null)
+                    {
+                        nodes.Add(n, c);
+                    }
+                }
+            }
+            return nodes;
         }
 
         // Cria estado d
-        static Graph addEstadoD(Graph g)
+        static void addEstadoD(Graph g)
         {
-            Node d = new Node("d");
-            Edge e = new Edge(d, d, ' ');
+            Node d = new Node("D");
             foreach (char c in letras)
             {
-                e = new Edge(d, d, c);
-                d.AddEdge(e);
+                d.AddEdge(new Edge(d, d, c));
             }
             g.AddNode(d);
-            return g;
         }
 
         // Todos os estados que não são função programa total devem apontar para o estado d
         // Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
-        static void apontaParaD(Node n)
+        static void apontaParaD(Graph g)
         {
-
+            var nodes = isTotal(g);
+            if(nodes.Count > 0)
+            {
+                addEstadoD(g);
+                Node nodeD = g.findNode("D");
+                foreach (KeyValuePair<Node, char> entry in nodes)
+                {
+                    entry.Key.AddEdge(new Edge(entry.Key, nodeD, entry.Value));
+                }
+            }
         }
 
-        static Graph miniminiza(Graph g)
+        static void miniminiza(Graph g)
         {
             Graph g2 = new Graph("Minimizado");
 
-            g2 = removeInacessiveis(g);
-
-            return g2;
+            removeInacessiveis(g);
+            apontaParaD(g);
+            printGraph(g);
         }
-
-
     }
 }
