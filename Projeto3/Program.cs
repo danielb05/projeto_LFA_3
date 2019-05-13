@@ -734,11 +734,49 @@ namespace Projeto3
 
         static void miniminiza(Graph g)
         {
+            Graph gteste = new Graph("Teste");
             Graph g2 = new Graph("Minimizado");
+
+            gteste = geraGraficoTeset();
 
             removeInacessiveis(g);
             apontaParaD(g);
             printGraph(g);
+
+            List<Node> equivalentes = new List<Node>();
+
+            int[,] matriz = new int[g.nodes.Count, g.nodes.Count];
+
+            int i = 0;
+            int j = 0;
+
+            foreach (Node n in g.nodes)
+            {
+                foreach (Node n2 in g.nodes)
+                {
+                    // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
+                    if (n.final == n2.final)
+                    {
+                        matriz[i, j] = 1;
+                        matriz[j, i] = 1;
+                    }
+                    else
+                    {
+                        foreach (Edge e in n.edges)
+                        {
+                            foreach (Edge e2 in n2.edges)
+                            {
+                                if (e.to == e2.to && e.value == e2.value)
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                    j++;
+                }
+                i++;
+            }
         }
     }
 }
