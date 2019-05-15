@@ -11,5 +11,10 @@ namespace Projeto3
         public List<Dependent> dependents { get; set; }
         public Node node1 { get; set; }
         public Node node2 { get; set; }
+
+        public Dependent()
+        {
+            this.dependents = new List<Dependent>();
+        }
     }
 }

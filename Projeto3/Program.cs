@@ -755,6 +755,8 @@ namespace Projeto3
         static void checkedMarked(Node n1, Node n2, Node ni, Node nj, Graph g)
         {
             int x, y, i, j;
+            Dependent d1 = new Dependent();
+            Dependent d2 = new Dependent();
 
             x = g.nodes.LastIndexOf(n1);
             y = g.nodes.LastIndexOf(n2);
@@ -762,7 +764,7 @@ namespace Projeto3
             i = g.nodes.LastIndexOf(ni);
             j = g.nodes.LastIndexOf(nj);
 
-            printMatrix();
+            //printMatrix();
 
             if (matriz[x, y] == 1)
             {
@@ -771,28 +773,31 @@ namespace Projeto3
             }
             else
             {
-                Dependent d1 = new Dependent();
-                Dependent d2 = new Dependent();
                 d2.node1 = n1;
                 d2.node2 = n2;
 
                 d1.node1 = ni;
                 d1.node2 = nj;
                 d1.dependents.Add(d2);
+                dependencies.Add(d1);
             }
-
             printMatrix();
         }
 
         static void printMatrix()
         {
-            for (int i = 0; i < 6; i++)
+            int i, j;
+            for (i = 0; i < 6; i++)
             {
-                for (int k = 0; k < 6; k++)
+                for (j = 0; j < 6; j++)
                 {
-                    Console.Write(matriz[i, k]);
+                    if (i < j)//(i < j+1)
+                    {
+                        Console.Write("");
+                    }
+                    else
+                        Console.Write(matriz[i,j]);
                 }
-
                 Console.WriteLine();
             }
             Console.WriteLine();
