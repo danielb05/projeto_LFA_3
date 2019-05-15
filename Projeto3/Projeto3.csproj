@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dependent.cs" />
     <Compile Include="DFAedge.cs" />
     <Compile Include="Edge.cs" />
     <Compile Include="Estado.cs" />

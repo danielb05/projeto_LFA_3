@@ -12,6 +12,8 @@ namespace Projeto3
         static List<char> letras = new List<char>();
         static List<Estado> estados = new List<Estado>();
         static List<DFAedge> list_dfa = new List<DFAedge>();
+        static int[,] matriz;
+        static List<Dependent> dependencies = new List<Dependent>();
 
         static void Main(string[] args)
         {
@@ -563,6 +565,7 @@ namespace Projeto3
 
             Node n0 = new Node();
             n0.initial = true;
+            n0.final = true;
 
             Node n1 = new Node();
             Node n2 = new Node();
@@ -599,8 +602,8 @@ namespace Projeto3
             e = new Edge(n4, n3, 'a');
             n4.AddEdge(e);
 
-            //e = new Edge(n4, n2, 'b');
-            //n4.AddEdge(e);
+            e = new Edge(n4, n2, 'b');
+            n4.AddEdge(e);
 
             e = new Edge(n5, n2, 'a');
             n5.AddEdge(e);
@@ -696,7 +699,7 @@ namespace Projeto3
             {
                 foreach(char c in letras)
                 {
-                    if((n.edges.Find(e => e.value == c)) == null)
+                    if((n.edges.Find(e => e.value == c)) == null && !nodes.ContainsKey(n))
                     {
                         nodes.Add(n, c);
                     }
@@ -732,49 +735,131 @@ namespace Projeto3
             }
         }
 
+        static bool checkedMarked(Node n1, Node n2, Graph g)
+        {
+            int x, y;
+
+            x = g.nodes.LastIndexOf(n1);
+            y = g.nodes.LastIndexOf(n2);
+
+            if (matriz[x, y] == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        static void checkedMarked(Node n1, Node n2, Node ni, Node nj, Graph g)
+        {
+            int x, y, i, j;
+
+            x = g.nodes.LastIndexOf(n1);
+            y = g.nodes.LastIndexOf(n2);
+
+            i = g.nodes.LastIndexOf(ni);
+            j = g.nodes.LastIndexOf(nj);
+
+            printMatrix();
+
+            if (matriz[x, y] == 1)
+            {
+                matriz[i, j] = 1;
+                matriz[j, i] = 1;
+            }
+            else
+            {
+                Dependent d1 = new Dependent();
+                Dependent d2 = new Dependent();
+                d2.node1 = n1;
+                d2.node2 = n2;
+
+                d1.node1 = ni;
+                d1.node2 = nj;
+                d1.dependents.Add(d2);
+            }
+
+            printMatrix();
+        }
+
+        static void printMatrix()
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                for (int k = 0; k < 6; k++)
+                {
+                    Console.Write(matriz[i, k]);
+                }
+
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
+
+        static void builInitialTable(Graph g)
+        {
+            int i = 0;
+            int j = 0;
+            foreach (Node n1 in g.nodes)
+            {
+                foreach (Node n2 in g.nodes)
+                {
+                    if (n1 == n2)
+                    {
+                        matriz[i, j] = 1;
+                        matriz[j, i] = 1;
+                    }
+                    // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
+                    else if (n1.final != n2.final)
+                    {
+                        matriz[i, j] = 1;
+                        matriz[j, i] = 1;
+                    }
+                    j++;
+                }
+                j = 0;
+                i++;
+            }
+        }
+
         static void miniminiza(Graph g)
         {
-            Graph gteste = new Graph("Teste");
             Graph g2 = new Graph("Minimizado");
-
-            gteste = geraGraficoTeset();
 
             removeInacessiveis(g);
             apontaParaD(g);
             printGraph(g);
 
-            List<Node> equivalentes = new List<Node>();
-
-            int[,] matriz = new int[g.nodes.Count, g.nodes.Count];
+            matriz = new int[g.nodes.Count, g.nodes.Count];
 
             int i = 0;
             int j = 0;
 
-            foreach (Node n in g.nodes)
+            builInitialTable(g);
+            printMatrix();
+
+            foreach (Node n1 in g.nodes)
             {
                 foreach (Node n2 in g.nodes)
                 {
-                    // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
-                    if (n.final == n2.final)
+                    if (!checkedMarked(n1, n2, g))
                     {
-                        matriz[i, j] = 1;
-                        matriz[j, i] = 1;
-                    }
-                    else
-                    {
-                        foreach (Edge e in n.edges)
+                        foreach (char c in letras)
                         {
-                            foreach (Edge e2 in n2.edges)
-                            {
-                                if (e.to == e2.to && e.value == e2.value)
-                                {
+                            Edge e1 = n1.edges.FirstOrDefault(edge => edge.value == c);
+                            Edge e2 = n2.edges.FirstOrDefault(edge => edge.value == c);
 
-                                }
-                            }
+                            Node node1 = e1.to;
+                            Node node2 = e2.to;
+
+                            checkedMarked(node1, node2, n1, n2, g);
                         }
-                    }
+                    }                    
                     j++;
                 }
+                j = 0;
                 i++;
             }
         }
