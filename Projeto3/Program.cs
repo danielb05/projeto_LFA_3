@@ -19,7 +19,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeset2();
+            Graph g = geraGraficoTeset();
 
             if (isAFD(g))
             {
@@ -621,7 +621,7 @@ namespace Projeto3
             letras.Add('a');
             letras.Add('b');
 
-            return g; 
+            return g;
         }
 
         static Graph geraGraficoTeset2()
@@ -636,9 +636,10 @@ namespace Projeto3
             n2.final = true;
             Node n3 = new Node();
             n3.final = true;
-            Node n4 = new Node();            
+            Node n4 = new Node();
+            n4.final = true;
             Node n5 = new Node();
-            n5.final = true;
+
 
             Edge e = new Edge(n0, n3, 'a');
             n0.AddEdge(e);
@@ -652,25 +653,25 @@ namespace Projeto3
             e = new Edge(n1, n0, 'b');
             n1.AddEdge(e);
 
-            e = new Edge(n2, n4, 'a');
+            e = new Edge(n2, n4, 'b');
             n2.AddEdge(e);
 
-            e = new Edge(n2, n5, 'b');
+            e = new Edge(n2, n5, 'a');
             n2.AddEdge(e);
 
-            e = new Edge(n3, n5, 'b');
+            e = new Edge(n3, n5, 'a');
             n3.AddEdge(e);
 
-            e = new Edge(n3, n4, 'a');
+            e = new Edge(n3, n4, 'b');
             n3.AddEdge(e);
 
-            e = new Edge(n4, n4, 'a');
+            e = new Edge(n4, n5, 'a');
             n4.AddEdge(e);
 
             e = new Edge(n4, n4, 'b');
             n4.AddEdge(e);
 
-            e = new Edge(n5, n4, 'a');
+            e = new Edge(n5, n5, 'a');
             n5.AddEdge(e);
 
             e = new Edge(n5, n5, 'b');
@@ -692,9 +693,9 @@ namespace Projeto3
         static bool isAFD(Graph g)
         {
             int count = 0;
-            foreach(Node n in g.nodes)
+            foreach (Node n in g.nodes)
             {
-                foreach(char c in letras)
+                foreach (char c in letras)
                 {
                     count = 0;
                     foreach (Edge e in n.edges)
@@ -704,7 +705,7 @@ namespace Projeto3
                         {
                             return false;
                         }
-                        if(e.value == c)
+                        if (e.value == c)
                         {
                             count++;
                         }
@@ -741,11 +742,11 @@ namespace Projeto3
         static bool checkAcessivel(Node n, List<Node> nodes)
         {
             int count = 0;
-            foreach(Node node in nodes)
+            foreach (Node node in nodes)
             {
-                foreach(Edge e in node.edges)
+                foreach (Edge e in node.edges)
                 {
-                    if(e.to.name == n.name)
+                    if (e.to.name == n.name)
                     {
                         count++;
                     }
@@ -761,9 +762,9 @@ namespace Projeto3
             var nodes = new Dictionary<Node, char>();
             foreach (Node n in g.nodes)
             {
-                foreach(char c in letras)
+                foreach (char c in letras)
                 {
-                    if((n.edges.Find(e => e.value == c)) == null && !nodes.ContainsKey(n))
+                    if ((n.edges.Find(e => e.value == c)) == null && !nodes.ContainsKey(n))
                     {
                         nodes.Add(n, c);
                     }
@@ -788,7 +789,7 @@ namespace Projeto3
         static void apontaParaD(Graph g)
         {
             var nodes = isTotal(g);
-            if(nodes.Count > 0)
+            if (nodes.Count > 0)
             {
                 addEstadoD(g);
                 Node nodeD = g.findNode("D");
@@ -806,6 +807,7 @@ namespace Projeto3
             x = g.nodes.LastIndexOf(n1);
             y = g.nodes.LastIndexOf(n2);
 
+            //if (matriz[x, y] == 1 || matriz[y, x] == 1)
             if (matriz[x, y] == 1)
             {
                 return true;
@@ -832,11 +834,13 @@ namespace Projeto3
 
             if (matriz[x, y] == 1)
             {
+                Console.WriteLine("Marcado");
                 matriz[i, j] = 1;
                 matriz[j, i] = 1;
             }
             else
             {
+                Console.WriteLine("Não Marcado");
                 d2.node1 = n1;
                 d2.node2 = n2;
 
@@ -845,7 +849,7 @@ namespace Projeto3
                 d1.dependents.Add(d2);
                 dependencies.Add(d1);
             }
-            printMatrix();
+            // printMatrix();
         }
 
         static void printMatrix()
@@ -860,7 +864,7 @@ namespace Projeto3
                         Console.Write("");
                     }
                     else
-                        Console.Write(matriz[i,j]);
+                        Console.Write(matriz[i, j]);
                 }
                 Console.WriteLine();
             }
@@ -877,8 +881,8 @@ namespace Projeto3
                 {
                     if (n1 == n2)
                     {
-                        matriz[i, j] = 1;
-                        matriz[j, i] = 1;
+                        matriz[i, j] = 0;
+                        matriz[j, i] = 0;
                     }
                     // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
                     else if (n1.final != n2.final)
@@ -887,6 +891,7 @@ namespace Projeto3
                         matriz[j, i] = 1;
                     }
                     j++;
+                    //printMatrix();
                 }
                 j = 0;
                 i++;
@@ -899,7 +904,7 @@ namespace Projeto3
 
             List<Node> equivalentes = new List<Node>();
 
-            for(i = 0; i < g.nodes.Count(); i++)
+            for (i = 0; i < g.nodes.Count(); i++)
             {
                 for (j = 0; j < g.nodes.Count(); j++)
                 {
@@ -922,7 +927,7 @@ namespace Projeto3
                         else if (index1 >= 0)
                         {
                             Node existente = equivalentes.ElementAt(index1);
-                            existente.name += "-" + n1.name; 
+                            existente.name += "-" + n1.name;
                         }
                         else if (index2 >= 0)
                         {
@@ -980,25 +985,46 @@ namespace Projeto3
             {
                 foreach (Node n2 in g.nodes)
                 {
-                    if (!checkMarked(n1, n2, g))
+                    if (i < j)
                     {
-                        foreach (char c in letras)
+                        if (!checkMarked(n1, n2, g))
                         {
-                            Edge e1 = n1.edges.FirstOrDefault(edge => edge.value == c);
-                            Edge e2 = n2.edges.FirstOrDefault(edge => edge.value == c);
+                            Console.WriteLine(n1.name + " - " + n2.name);
 
-                            Node node1 = e1.to;
-                            Node node2 = e2.to;
+                            foreach (char c in letras)
+                            {
+                                Edge e1 = n1.edges.FirstOrDefault(edge => edge.value == c);
+                                Edge e2 = n2.edges.FirstOrDefault(edge => edge.value == c);
 
-                            checkMarked(node1, node2, n1, n2, g);
+                                Node node1 = e1.to;
+                                Node node2 = e2.to;
+
+                                Console.WriteLine(n1.name + " , " + c + " => " + node1.name);
+                                Console.WriteLine(n2.name + " , " + c + " => " + node2.name);
+
+                                checkMarked(node1, node2, n1, n2, g);
+
+                                //if (!checkMarked(node1, node2, g))
+                                //{
+                                //    //não sei se é necessário
+                                //    //if (node1 != node2)
+                                //    Console.WriteLine("Não marcado");
+                                //    checkMarked(node1, node2, n1, n2, g);
+                                //}
+                                //else
+                                //{
+                                //    Console.WriteLine("Marcado");
+                                //}
+                            }
                         }
+                        Console.WriteLine();
                     }                    
                     j++;
                 }
                 j = 0;
                 i++;
             }
-
+            printMatrix();
             g2.nodes = findNotMarked(g);
             g2.nodes.AddRange(findUnique(g));
         }
