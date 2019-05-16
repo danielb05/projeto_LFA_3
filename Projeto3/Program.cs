@@ -17,7 +17,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeset();
+            Graph g = geraGraficoTeset2();
 
             if (isAFD(g))
             {
@@ -621,6 +621,72 @@ namespace Projeto3
             return g; 
         }
 
+        static Graph geraGraficoTeset2()
+        {
+            Graph g = new Graph("Mini");
+
+            Node n0 = new Node();
+            n0.initial = true;
+
+            Node n1 = new Node();
+            Node n2 = new Node();
+            n2.final = true;
+            Node n3 = new Node();
+            n3.final = true;
+            Node n4 = new Node();
+            n4.final = true;
+            Node n5 = new Node();
+
+
+            Edge e = new Edge(n0, n3, 'a');
+            n0.AddEdge(e);
+
+            e = new Edge(n0, n1, 'b');
+            n0.AddEdge(e);
+
+            e = new Edge(n1, n2, 'a');
+            n1.AddEdge(e);
+
+            e = new Edge(n1, n0, 'b');
+            n1.AddEdge(e);
+
+            e = new Edge(n2, n4, 'b');
+            n2.AddEdge(e);
+
+            e = new Edge(n2, n5, 'a');
+            n2.AddEdge(e);
+
+            e = new Edge(n3, n5, 'a');
+            n3.AddEdge(e);
+
+            e = new Edge(n3, n4, 'b');
+            n3.AddEdge(e);
+
+            e = new Edge(n4, n5, 'a');
+            n4.AddEdge(e);
+
+            e = new Edge(n4, n4, 'b');
+            n4.AddEdge(e);
+
+            e = new Edge(n5, n5, 'a');
+            n5.AddEdge(e);
+
+            e = new Edge(n5, n5, 'b');
+            n5.AddEdge(e);
+
+            g.AddNode(n0);
+            g.AddNode(n1);
+            g.AddNode(n2);
+            g.AddNode(n3);
+            g.AddNode(n4);
+            g.AddNode(n5);
+
+            letras.Add('a');
+            letras.Add('b');
+
+            return g;
+        }
+
         // Verifica se o Grafico é um AFD
         static bool isAFD(Graph g)
         {
@@ -739,7 +805,19 @@ namespace Projeto3
             removeInacessiveis(g);
             apontaParaD(g);
             List<Pair> pairs = primeiraParte(g);
-            segundaParte(g, pairs);
+            Console.WriteLine("Pairs");
+            printPairs(pairs);
+
+            List<Pair> pairs_to_remove = segundaParte(g, pairs);
+            Console.WriteLine("pairs_to_remove");
+            printPairs(pairs_to_remove);
+
+            List<Pair> pairs2 = new List<Pair>();
+            pairs2.AddRange(pairs.Where(p => !pairs_to_remove.Any(p2 => p2 == p)));
+            Console.WriteLine("Pairs2");
+            printPairs(pairs2);
+
+            removeUselessNodes(g.nodes);
             printGraph(g);
         }
 
@@ -776,7 +854,7 @@ namespace Projeto3
                     {
                         Pair new_pair = new Pair(e_node1.to, e_node2.to);
                         
-                        if(!isPair(p, new_pair) && checkPairToRemove(new_pair, pairs_to_remove, pairs))
+                        if(!isPair(p, new_pair) && e_node1.to != e_node2.to && checkPairToRemove(new_pair, pairs_to_remove, pairs))
                         {
                             //o nó esta marcado, adiciona na fila temporária para remover
                             if(listContainsPair(pairs, new_pair) && !listContainsPair(pairs_to_remove, new_pair))
@@ -833,6 +911,45 @@ namespace Projeto3
         static void removePairs(List<Pair> pairs, List<Pair> pairs_to_remove)
         {
 
+        }
+
+        static List<Node> removeUselessNodes(List<Node> nodes)
+        {
+            List<Node> useful = new List<Node>();
+
+            foreach(Node n in nodes)
+            {
+                if (!n.final)
+                {
+                    int count = 0;
+                    foreach (Edge e in n.edges)
+                    {
+                        if (e.to != n)
+                        {
+                            count++;
+                        }
+                    }
+                    if (count > 0)
+                    {
+                        useful.Add(n);
+                    }
+                }
+                else
+                {
+                    useful.Add(n);
+                }
+            }
+
+            return useful;
+        }
+
+        static void printPairs(List<Pair> pairs)
+        {
+            foreach (Pair p in pairs)
+            {
+                Console.WriteLine(p.node1.name + " - " + p.node2.name);
+            }
+            Console.WriteLine();
         }
     }
 }
