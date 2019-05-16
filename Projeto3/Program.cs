@@ -738,7 +738,47 @@ namespace Projeto3
 
             removeInacessiveis(g);
             apontaParaD(g);
+            List<Pair> pairs = primeiraParte(g);
+            segundaParte(g, pairs);
             printGraph(g);
+        }
+
+        static List<Pair> primeiraParte(Graph g)
+        {
+            List<Node> listaColuna = g.nodes.GetRange(1, g.nodes.Count - 1);
+            List<Node> listaLinha = g.nodes.GetRange(0, g.nodes.Count - 2);
+            List<Pair> pairs = new List<Pair>();
+
+            foreach(Node l in listaLinha)
+            {
+                foreach(Node c in listaColuna)
+                {
+                    if(l.final != c.final)
+                    {
+                        pairs.Add(new Pair(l, c));
+                    }
+                }
+            }
+
+            return pairs;
+        }
+
+        static void segundaParte(Graph g, List<Pair> pairs)
+        {
+            List<Pair> pairs_to_remove = new List<Pair>();
+            foreach(Pair p in pairs)
+            {
+                foreach(char letra in letras)
+                {
+                    Edge e_node1 = p.node1.edges.Find(e => e.value == letra);
+                    Edge e_node2 = p.node2.edges.Find(e => e.value == letra);
+                    if(e_node1 != null || e_node2 != null)
+                    {
+                        Pair new_pair = new Pair(e_node1.to, e_node2.to);
+                    }
+
+                }
+            }
         }
     }
 }
