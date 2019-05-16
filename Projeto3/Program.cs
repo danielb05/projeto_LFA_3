@@ -19,7 +19,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeset();
+            Graph g = geraGraficoTeset2();
 
             if (isAFD(g))
             {
@@ -624,6 +624,70 @@ namespace Projeto3
             return g; 
         }
 
+        static Graph geraGraficoTeset2()
+        {
+            Graph g = new Graph("Mini");
+
+            Node n0 = new Node();
+            n0.initial = true;
+
+            Node n1 = new Node();
+            Node n2 = new Node();
+            n2.final = true;
+            Node n3 = new Node();
+            n3.final = true;
+            Node n4 = new Node();            
+            Node n5 = new Node();
+            n5.final = true;
+
+            Edge e = new Edge(n0, n3, 'a');
+            n0.AddEdge(e);
+
+            e = new Edge(n0, n1, 'b');
+            n0.AddEdge(e);
+
+            e = new Edge(n1, n2, 'a');
+            n1.AddEdge(e);
+
+            e = new Edge(n1, n0, 'b');
+            n1.AddEdge(e);
+
+            e = new Edge(n2, n4, 'a');
+            n2.AddEdge(e);
+
+            e = new Edge(n2, n5, 'b');
+            n2.AddEdge(e);
+
+            e = new Edge(n3, n5, 'b');
+            n3.AddEdge(e);
+
+            e = new Edge(n3, n4, 'a');
+            n3.AddEdge(e);
+
+            e = new Edge(n4, n4, 'a');
+            n4.AddEdge(e);
+
+            e = new Edge(n4, n4, 'b');
+            n4.AddEdge(e);
+
+            e = new Edge(n5, n4, 'a');
+            n5.AddEdge(e);
+
+            e = new Edge(n5, n5, 'b');
+            n5.AddEdge(e);
+
+            g.AddNode(n0);
+            g.AddNode(n1);
+            g.AddNode(n2);
+            g.AddNode(n3);
+            g.AddNode(n4);
+            g.AddNode(n5);
+
+            letras.Add('a');
+            letras.Add('b');
+
+            return g;
+        }
         // Verifica se o Grafico é um AFD
         static bool isAFD(Graph g)
         {
