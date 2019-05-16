@@ -17,7 +17,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeset();
+            Graph g = geraGraficoTeset2();
 
             if (isAFD(g))
             {
@@ -561,33 +561,99 @@ namespace Projeto3
         {
             Graph g = new Graph("Mini");
 
+            Node q0 = new Node("q0");
+            Node q1 = new Node("q1");
+            Node q2 = new Node("q2");
+            Node q3 = new Node("q3");
+            Node q4 = new Node("q4");
+            Node q5 = new Node("q5");
+            
+            q0.initial = true;
+            q2.final = true;
+            q5.final = true;
+            
+            Edge e = new Edge(q0, q1, 'a');
+            q0.AddEdge(e);
+
+            e = new Edge(q0, q0, 'b');
+            q0.AddEdge(e);
+
+            e = new Edge(q1, q2, 'a');
+            q1.AddEdge(e);
+
+            e = new Edge(q1, q1, 'b');
+            q1.AddEdge(e);
+
+            e = new Edge(q2, q3, 'a');
+            q2.AddEdge(e);
+
+            e = new Edge(q2, q2, 'b');
+            q2.AddEdge(e);
+
+            e = new Edge(q3, q4, 'a');
+            q3.AddEdge(e);
+
+            e = new Edge(q3, q3, 'b');
+            q3.AddEdge(e);
+
+            e = new Edge(q4, q5, 'a');
+            q4.AddEdge(e);
+
+            e = new Edge(q4, q4, 'b');
+            q4.AddEdge(e);
+
+            e = new Edge(q5, q0, 'a');
+            q5.AddEdge(e);
+
+            e = new Edge(q5, q5, 'b');
+            q5.AddEdge(e);
+            
+            g.AddNode(q0);
+            g.AddNode(q1);
+            g.AddNode(q2);
+            g.AddNode(q3);
+            g.AddNode(q4);
+            g.AddNode(q5);
+
+            letras.Add('a');
+            letras.Add('b');
+
+            return g; 
+        }
+
+        static Graph geraGraficoTeset2()
+        {
+            Graph g = new Graph("Mini");
+
             Node n0 = new Node();
             n0.initial = true;
 
             Node n1 = new Node();
             Node n2 = new Node();
+            n2.final = true;
             Node n3 = new Node();
+            n3.final = true;
             Node n4 = new Node();
             n4.final = true;
             Node n5 = new Node();
-            n5.final = true;
 
-            Edge e = new Edge(n0, n2, 'a');
+
+            Edge e = new Edge(n0, n3, 'a');
             n0.AddEdge(e);
 
             e = new Edge(n0, n1, 'b');
             n0.AddEdge(e);
 
-            e = new Edge(n1, n1, 'a');
+            e = new Edge(n1, n2, 'a');
             n1.AddEdge(e);
 
             e = new Edge(n1, n0, 'b');
             n1.AddEdge(e);
 
-            e = new Edge(n2, n4, 'a');
+            e = new Edge(n2, n4, 'b');
             n2.AddEdge(e);
 
-            e = new Edge(n2, n5, 'b');
+            e = new Edge(n2, n5, 'a');
             n2.AddEdge(e);
 
             e = new Edge(n3, n5, 'a');
@@ -596,16 +662,16 @@ namespace Projeto3
             e = new Edge(n3, n4, 'b');
             n3.AddEdge(e);
 
-            e = new Edge(n4, n3, 'a');
+            e = new Edge(n4, n5, 'a');
             n4.AddEdge(e);
 
-            //e = new Edge(n4, n2, 'b');
-            //n4.AddEdge(e);
+            e = new Edge(n4, n4, 'b');
+            n4.AddEdge(e);
 
-            e = new Edge(n5, n2, 'a');
+            e = new Edge(n5, n5, 'a');
             n5.AddEdge(e);
 
-            e = new Edge(n5, n3, 'b');
+            e = new Edge(n5, n5, 'b');
             n5.AddEdge(e);
 
             g.AddNode(n0);
@@ -618,7 +684,7 @@ namespace Projeto3
             letras.Add('a');
             letras.Add('b');
 
-            return g; 
+            return g;
         }
 
         // Verifica se o Grafico é um AFD
@@ -741,6 +807,20 @@ namespace Projeto3
 
             removeInacessiveis(g);
             apontaParaD(g);
+            List<Pair> pairs = primeiraParte(g);
+            Console.WriteLine("Pairs");
+            printPairs(pairs);
+
+            List<Pair> pairs_to_remove = segundaParte(g, pairs);
+            Console.WriteLine("pairs_to_remove");
+            printPairs(pairs_to_remove);
+
+            List<Pair> pairs2 = new List<Pair>();
+            pairs2.AddRange(pairs.Where(p => !pairs_to_remove.Any(p2 => p2 == p)));
+            Console.WriteLine("Pairs2");
+            printPairs(pairs2);
+
+            removeUselessNodes(g.nodes);
             printGraph(g);
 
             List<Node> equivalentes = new List<Node>();
@@ -777,6 +857,137 @@ namespace Projeto3
                 }
                 i++;
             }
+        }
+
+        static List<Pair> primeiraParte(Graph g)
+        {
+            List<Node> listaColuna = g.nodes.GetRange(1, g.nodes.Count - 1);
+            List<Node> listaLinha = g.nodes.GetRange(0, g.nodes.Count - 1);
+            List<Pair> pairs = new List<Pair>();
+
+            foreach(Node l in listaLinha)
+            {
+                foreach(Node c in listaColuna)
+                {
+                    if(!l.Equals(c) && l.final == c.final && !listContainsPair(pairs, new Pair(l, c)))
+                    {
+                        pairs.Add(new Pair(l, c));
+                    }
+                }
+            }
+
+            return pairs;
+        }
+
+        static List<Pair> segundaParte(Graph g, List<Pair> pairs)
+        {
+            List<Pair> pairs_to_remove = new List<Pair>();
+            foreach(Pair p in pairs)
+            {
+                foreach(char letra in letras)
+                {
+                    Edge e_node1 = p.node1.edges.Find(e => e.value == letra);
+                    Edge e_node2 = p.node2.edges.Find(e => e.value == letra);
+                    if(e_node1 != null || e_node2 != null)
+                    {
+                        Pair new_pair = new Pair(e_node1.to, e_node2.to);
+                        
+                        if(!isPair(p, new_pair) && e_node1.to != e_node2.to && checkPairToRemove(new_pair, pairs_to_remove, pairs))
+                        {
+                            //o nó esta marcado, adiciona na fila temporária para remover
+                            if(listContainsPair(pairs, new_pair) && !listContainsPair(pairs_to_remove, new_pair))
+                            {
+                                pairs_to_remove.Add(new_pair);
+                            }
+                            if (listContainsPair(pairs, p) && !listContainsPair(pairs_to_remove, p))
+                            {
+                                pairs_to_remove.Add(p);
+                            }
+                            break;
+                        } else if(!isPair(p, new_pair))
+                        {
+                            p.listPairs.Add(new_pair);
+                        }
+                    }
+
+                }
+            }
+            return pairs_to_remove;
+        }
+
+        //verifica se o par está na lista dos nós que não são equivalentes
+        //ou se está na lista para ser removido
+        //se o nó não estiver na lista de nós ou se estiver na lista de remoção, então ele 
+        //retorna se o nó está marcado ou não, se é pra remove-lo ou nao
+        static bool checkPairToRemove(Pair p, List<Pair> pairs_to_remove, List<Pair> pairs)
+        {
+            Pair pair_removed = pairs_to_remove.Find(
+                r => (r.node1 == p.node1 || r.node1 == p.node2) && (r.node2 == p.node1 || r.node2 == p.node2)
+            );
+
+            Pair pair = pairs.Find(
+                r => (r.node1 == p.node1 || r.node1 == p.node2) && (r.node2 == p.node1 || r.node2 == p.node2)
+            );
+            return !(pair != null && pair_removed == null);
+        }
+
+        //verifica se os pares se são iguais, se estão apenas com os nós trocados (q0, q3) (q3, q0)
+        static bool isPair(Pair p1, Pair p2)
+        {
+            return ((p1.node1 == p2.node1 || p1.node1 == p2.node2) && (p1.node2 == p2.node1 || p1.node2 == p2.node2));
+        }
+
+        //verifica se uma lista de pares contém um par
+        static bool listContainsPair(List<Pair> pairs, Pair p)
+        {
+            Pair f = pairs.Find(
+                r => (r.node1 == p.node1 || r.node1 == p.node2) && (r.node2 == p.node1 || r.node2 == p.node2)
+            );
+            return f != null;
+        }
+
+        static void removePairs(List<Pair> pairs, List<Pair> pairs_to_remove)
+        {
+
+        }
+
+        static List<Node> removeUselessNodes(List<Node> nodes)
+        {
+            List<Node> useful = new List<Node>();
+
+            foreach(Node n in nodes)
+            {
+                if (!n.final)
+                {
+                    int count = 0;
+                    foreach (Edge e in n.edges)
+                    {
+                        if (e.to != n)
+                        {
+                            count++;
+                        }
+                    }
+                    if (count > 0)
+                    {
+                        useful.Add(n);
+                    }
+                }
+                else
+                {
+                    useful.Add(n);
+                }
+            }
+
+            return useful;
+        }
+
+        static void printPairs(List<Pair> pairs)
+        {
+            foreach (Pair p in pairs)
+            {
+                Console.WriteLine(p.node1.name + " - " + p.node2.name);
+            }
+            Console.WriteLine();
         }
     }
 }
