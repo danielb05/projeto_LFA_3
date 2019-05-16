@@ -735,7 +735,7 @@ namespace Projeto3
             }
         }
 
-        static bool checkedMarked(Node n1, Node n2, Graph g)
+        static bool checkMarked(Node n1, Node n2, Graph g)
         {
             int x, y;
 
@@ -752,7 +752,7 @@ namespace Projeto3
             }
         }
 
-        static void checkedMarked(Node n1, Node n2, Node ni, Node nj, Graph g)
+        static void checkMarked(Node n1, Node n2, Node ni, Node nj, Graph g)
         {
             int x, y, i, j;
             Dependent d1 = new Dependent();
@@ -829,6 +829,73 @@ namespace Projeto3
             }
         }
 
+        static List<Node> findNotMarked(Graph g)
+        {
+            int i, j;
+
+            List<Node> equivalentes = new List<Node>();
+
+            for(i = 0; i < g.nodes.Count(); i++)
+            {
+                for (j = 0; j < g.nodes.Count(); j++)
+                {
+                    if (i < j && matriz[i, j] == 0)
+                    {
+                        Node n1 = g.nodes.ElementAt(i);
+                        Node n2 = g.nodes.ElementAt(j);
+                        Node novo = new Node(n1.name + '-' + n2.name);
+
+                        novo.initial = n1.initial;
+                        novo.final = n1.final;
+
+                        int index1 = equivalentes.FindIndex(node => node.name.Contains(n1.name));
+                        int index2 = equivalentes.FindIndex(node => node.name.Contains(n2.name));
+
+                        if (index1 < 0 && index2 < 0)
+                        {
+                            equivalentes.Add(novo);
+                        }
+                        else if (index1 >= 0)
+                        {
+                            Node existente = equivalentes.ElementAt(index1);
+                            existente.name += "-" + n1.name; 
+                        }
+                        else if (index2 >= 0)
+                        {
+                            Node existente = equivalentes.ElementAt(index2);
+                            existente.name += "-" + n2.name;
+                        }
+                    }
+                }
+            }
+            return equivalentes;
+        }
+
+        static List<Node> findUnique(Graph g)
+        {
+            List<Node> uniques = new List<Node>();
+            List<Node> equivalents = new List<Node>();
+
+            int i, j;
+
+            for (i = 0; i < g.nodes.Count(); i++)
+            {
+                for (j = 0; j < g.nodes.Count(); j++)
+                {
+                    if (i < j && matriz[i, j] == 0)
+                    {
+                        Node n1 = g.nodes.ElementAt(i);
+                        equivalents.Add(n1);
+                        Node n2 = g.nodes.ElementAt(j);
+                        equivalents.Add(n2);
+                    }
+                }
+            }
+
+            uniques.AddRange(g.nodes.Where(n => !equivalents.Any(n2 => n2 == n)));
+            return uniques;
+        }
+
         static void miniminiza(Graph g)
         {
             Graph g2 = new Graph("Minimizado");
@@ -849,7 +916,7 @@ namespace Projeto3
             {
                 foreach (Node n2 in g.nodes)
                 {
-                    if (!checkedMarked(n1, n2, g))
+                    if (!checkMarked(n1, n2, g))
                     {
                         foreach (char c in letras)
                         {
@@ -859,7 +926,7 @@ namespace Projeto3
                             Node node1 = e1.to;
                             Node node2 = e2.to;
 
-                            checkedMarked(node1, node2, n1, n2, g);
+                            checkMarked(node1, node2, n1, n2, g);
                         }
                     }                    
                     j++;
@@ -867,6 +934,9 @@ namespace Projeto3
                 j = 0;
                 i++;
             }
+
+            g2.nodes = findNotMarked(g);
+            g2.nodes.AddRange(findUnique(g));
         }
     }
 }
