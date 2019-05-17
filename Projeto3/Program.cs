@@ -687,6 +687,32 @@ namespace Projeto3
             return g;
         }
 
+        static void miniminiza(Graph g)
+        {
+            Graph g2 = new Graph("Minimizado");
+
+            removeInacessiveis(g);
+            apontaParaD(g);
+            List<Pair> pairs = primeiraParte(g);
+            Console.WriteLine("Pairs");
+            printPairs(pairs);
+
+            List<Pair> pairs_to_remove = segundaParte(g, pairs);
+            Console.WriteLine("pairs_to_remove");
+            printPairs(pairs_to_remove);
+
+            List<Pair> pairs2 = new List<Pair>();
+            pairs2.AddRange(pairs.Where(p => !pairs_to_remove.Any(p2 => p2 == p)));
+            Console.WriteLine("Pairs2");
+            printPairs(pairs2);
+
+            pairToNode(g, pairs2);
+
+            removeUselessNodes(g.nodes);
+            printGraph(g);
+
+        }
+
         // Verifica se o Grafico é um AFD
         static bool isAFD(Graph g)
         {
@@ -798,67 +824,6 @@ namespace Projeto3
             }
         }
 
-        static void miniminiza(Graph g)
-        {
-            Graph gteste = new Graph("Teste");
-            Graph g2 = new Graph("Minimizado");
-
-            gteste = geraGraficoTeset();
-
-            removeInacessiveis(g);
-            apontaParaD(g);
-            List<Pair> pairs = primeiraParte(g);
-            Console.WriteLine("Pairs");
-            printPairs(pairs);
-
-            List<Pair> pairs_to_remove = segundaParte(g, pairs);
-            Console.WriteLine("pairs_to_remove");
-            printPairs(pairs_to_remove);
-
-            List<Pair> pairs2 = new List<Pair>();
-            pairs2.AddRange(pairs.Where(p => !pairs_to_remove.Any(p2 => p2 == p)));
-            Console.WriteLine("Pairs2");
-            printPairs(pairs2);
-
-            removeUselessNodes(g.nodes);
-            printGraph(g);
-
-            List<Node> equivalentes = new List<Node>();
-
-            int[,] matriz = new int[g.nodes.Count, g.nodes.Count];
-
-            int i = 0;
-            int j = 0;
-
-            foreach (Node n in g.nodes)
-            {
-                foreach (Node n2 in g.nodes)
-                {
-                    // Se ambos não são finais ou não são não-finais, eles não podem ser equivalentes
-                    if (n.final == n2.final)
-                    {
-                        matriz[i, j] = 1;
-                        matriz[j, i] = 1;
-                    }
-                    else
-                    {
-                        foreach (Edge e in n.edges)
-                        {
-                            foreach (Edge e2 in n2.edges)
-                            {
-                                if (e.to == e2.to && e.value == e2.value)
-                                {
-
-                                }
-                            }
-                        }
-                    }
-                    j++;
-                }
-                i++;
-            }
-        }
-
         static List<Pair> primeiraParte(Graph g)
         {
             List<Node> listaColuna = g.nodes.GetRange(1, g.nodes.Count - 1);
@@ -915,10 +880,57 @@ namespace Projeto3
             return pairs_to_remove;
         }
 
-        //verifica se o par está na lista dos nós que não são equivalentes
-        //ou se está na lista para ser removido
-        //se o nó não estiver na lista de nós ou se estiver na lista de remoção, então ele 
-        //retorna se o nó está marcado ou não, se é pra remove-lo ou nao
+        static void pairToNode(Graph g, List<Pair> pairs)
+        {
+            List<Node> new_Nodes = new List<Node>();
+            List<Node> used = new List<Node>();
+
+            foreach(Pair p in pairs)
+            {
+                int index1 = new_Nodes.FindIndex(node => node.name.Contains(p.node1.name));
+                int index2 = new_Nodes.FindIndex(node => node.name.Contains(p.node2.name));
+
+                if(index1 < 0 && index2 < 0)
+                {
+                    Node n = new Node(p.node1.name + "," + p.node2.name);
+                    n.final = p.node1.final;
+                    if (p.node1.initial || p.node2.initial)
+                    {
+                        n.initial = true;
+                    }
+                    new_Nodes.Add(n);
+                    used.Add(p.node1);
+                    used.Add(p.node2);
+                }
+                if(index1 < 0 && index2 >= 0)
+                {
+                    Node n = new_Nodes.ElementAt(index2);
+                    n.name += "," + p.node1.name;
+                    used.Add(p.node1);
+                }
+                if (index2 < 0 && index1 >= 0)
+                {
+                    Node n = new_Nodes.ElementAt(index1);
+                    n.name += "," + p.node2.name;
+                    used.Add(p.node2);
+                }
+            }
+
+            new_Nodes.AddRange(g.nodes.Except(used).ToList());
+
+            foreach (Node n in new_Nodes)
+            {
+                Console.WriteLine(n.name);
+                Console.WriteLine("Inicial " + n.initial.ToString());
+                Console.WriteLine("Final " + n.final.ToString());
+                Console.WriteLine();
+            }
+        }
+
+        // Verifica se o par está na lista dos nós que não são equivalentes
+        // ou se está na lista para ser removido
+        // se o nó não estiver na lista de nós ou se estiver na lista de remoção, então ele 
+        // retorna se o nó está marcado ou não, se é pra remove-lo ou nao
         static bool checkPairToRemove(Pair p, List<Pair> pairs_to_remove, List<Pair> pairs)
         {
             Pair pair_removed = pairs_to_remove.Find(
@@ -931,13 +943,13 @@ namespace Projeto3
             return !(pair != null && pair_removed == null);
         }
 
-        //verifica se os pares se são iguais, se estão apenas com os nós trocados (q0, q3) (q3, q0)
+        // Verifica se os pares se são iguais, se estão apenas com os nós trocados (q0, q3) (q3, q0)
         static bool isPair(Pair p1, Pair p2)
         {
             return ((p1.node1 == p2.node1 || p1.node1 == p2.node2) && (p1.node2 == p2.node1 || p1.node2 == p2.node2));
         }
 
-        //verifica se uma lista de pares contém um par
+        // Verifica se uma lista de pares contém um par
         static bool listContainsPair(List<Pair> pairs, Pair p)
         {
             Pair f = pairs.Find(
