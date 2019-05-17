@@ -1001,8 +1001,9 @@ namespace Projeto3
                 }
             }
 
-            new_Nodes = addEdges(g, new_Nodes);
             new_Nodes.AddRange(g.nodes.Except(used).ToList());
+
+            new_Nodes = addEdges(g, new_Nodes);
 
             foreach (Node n in new_Nodes)
             {
@@ -1047,6 +1048,8 @@ namespace Projeto3
                 }
 
                 n.edges.AddRange(new_edges);
+
+                n.edges = removeDuplicates(n.edges);
             }
             return nodes;
         }
@@ -1061,6 +1064,29 @@ namespace Projeto3
                 }
             }
             return false;
+        }
+
+        static List<Edge> removeDuplicates(List<Edge> list)
+        {
+            List<Edge> unique = new List<Edge>();
+
+            foreach(Edge e in list)
+            {
+                int count = 0;
+                foreach(Edge ee in list)
+                {
+                    if(e.from == ee.from && e.value == ee.value && e.to == ee.to)
+                    {
+                        count++;
+                    }
+                }
+                if(count == 1)
+                {
+                    unique.Add(e);
+                }
+            }
+
+            return unique;
         }
 
         // Verifica se o par está na lista dos nós que não são equivalentes
