@@ -17,7 +17,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeset();
+            Graph g = geraGraficoTeste3();
 
             if (isAFD(g))
             {
@@ -739,7 +739,8 @@ namespace Projeto3
             removeInacessiveis(g);
             apontaParaD(g);
             List<Pair> pairs = primeiraParte(g);
-            segundaParte(g, pairs);
+            List<Pair> pairs_to_remove = segundaParte(g, pairs);
+            removePairs(pairs, pairs_to_remove);
             printGraph(g);
         }
 
@@ -776,7 +777,7 @@ namespace Projeto3
                     {
                         Pair new_pair = new Pair(e_node1.to, e_node2.to);
                         
-                        if(!isPair(p, new_pair) && checkPairToRemove(new_pair, pairs_to_remove, pairs))
+                        if(!isPair(p, new_pair) && e_node1.to != e_node2.to && checkPairToRemove(new_pair, pairs_to_remove, pairs))
                         {
                             //o nó esta marcado, adiciona na fila temporária para remover
                             if(listContainsPair(pairs, new_pair) && !listContainsPair(pairs_to_remove, new_pair))
@@ -829,10 +830,142 @@ namespace Projeto3
             );
             return f != null;
         }
-
+        
         static void removePairs(List<Pair> pairs, List<Pair> pairs_to_remove)
         {
+            List<Pair> remove;
+            while(pairs_to_remove.Count > 0)
+            {
+                foreach(Pair r in pairs_to_remove)
+                {
+                    if (listContainsPair(pairs, r))
+                    {
+                        pairs.Remove(r);
+                    }
+                }
+                remove = new List<Pair>();
+                foreach (Pair p in pairs)
+                {
+                    foreach (Pair f in p.listPairs)
+                    {
+                        if ((!listContainsPair(pairs, f) || listContainsPair(remove, f)) && !listContainsPair(remove, p))
+                        {
+                            remove.Add(p);
+                        }
+                    }
+                }
 
+                pairs_to_remove = remove;
+            }            
+        }
+
+        static List<Node> createNodes(List<Pair> pairs)
+        {
+            List<Node> new_nodes = new List<Node>();
+            foreach (Pair p in pairs)
+            {
+                //busca os nós equivalentes em uma lista só
+                List<Node> nodes = findNodesEqui(pairs, p);
+                //busca todas as arestas q iam para algum desses nós e aponta para o novo nó
+                string name = "";
+                foreach (Node n in nodes)
+                {
+                    name += n.name + "-";
+                }
+                new_nodes.Add(new Node(name));
+            }
+            return new_nodes;
+        }
+
+        static List<Node> findNodesEqui(List<Pair> pairs, Pair p)
+        {
+            List<Node> nodes = new List<Node>();
+
+            nodes.Add(p.node1);
+            nodes.Add(p.node2);
+
+            foreach (Pair e in pairs)
+            {
+                if (!isPair(e, p))
+                {
+                    if(e.node1 == p.node1 || e.node1 == p.node2 || e.node2 == p.node1 || e.node2 == p.node2)
+                    {
+                        if (!nodes.Contains(e.node1))
+                        {
+                            nodes.Add(e.node1);
+                        }
+                        if (!nodes.Contains(e.node2))
+                        {
+                            nodes.Add(e.node2);
+                        }
+                    }                    
+                }
+            }
+            return nodes;
+        }
+
+        static Graph geraGraficoTeste3()
+        {
+            Graph g = new Graph("Mini");
+
+            Node q0 = new Node("q0");
+            Node q1 = new Node("q1");
+            Node q2 = new Node("q2");
+            Node q3 = new Node("q3");
+            Node q4 = new Node("q4");
+            Node q5 = new Node("q5");
+
+            q0.initial = true;
+            q4.final = true;
+            q5.final = true;
+
+            Edge e = new Edge(q0, q2, 'a');
+            q0.AddEdge(e);
+
+            e = new Edge(q0, q1, 'b');
+            q0.AddEdge(e);
+
+            e = new Edge(q1, q1, 'a');
+            q1.AddEdge(e);
+
+            e = new Edge(q1, q0, 'b');
+            q1.AddEdge(e);
+
+            e = new Edge(q2, q4, 'a');
+            q2.AddEdge(e);
+
+            e = new Edge(q2, q5, 'b');
+            q2.AddEdge(e);
+
+            e = new Edge(q3, q5, 'a');
+            q3.AddEdge(e);
+
+            e = new Edge(q3, q4, 'b');
+            q3.AddEdge(e);
+
+            e = new Edge(q4, q3, 'a');
+            q4.AddEdge(e);
+
+            e = new Edge(q4, q2, 'b');
+            q4.AddEdge(e);
+
+            e = new Edge(q5, q2, 'a');
+            q5.AddEdge(e);
+
+            e = new Edge(q5, q3, 'b');
+            q5.AddEdge(e);
+
+            g.AddNode(q0);
+            g.AddNode(q1);
+            g.AddNode(q2);
+            g.AddNode(q3);
+            g.AddNode(q4);
+            g.AddNode(q5);
+
+            letras.Add('a');
+            letras.Add('b');
+
+            return g;
         }
     }
 }
