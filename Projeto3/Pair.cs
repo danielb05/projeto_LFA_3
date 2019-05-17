@@ -10,6 +10,7 @@ namespace Projeto3
     {
         public Node node1 { get; set; }
         public Node node2 { get; set; }
+        public List<Pair> listPairs { get; set; }
         public Pair()
         {
 
@@ -18,6 +19,7 @@ namespace Projeto3
         {
             this.node1 = node1;
             this.node2 = node2;
+            this.listPairs = new List<Pair>();
         }
     }
 }
