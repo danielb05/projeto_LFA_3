@@ -59,5 +59,18 @@ namespace Projeto3
             }
             return null;
         }
+
+        public void printNode()
+        {
+            Console.WriteLine(name);
+            if (initial)
+            {
+                Console.WriteLine("Inicial");
+            }
+            if (final)
+            {
+                Console.WriteLine("Final");
+            }
+        }
     }
 }

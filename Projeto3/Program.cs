@@ -17,11 +17,7 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeste2();
-
-            Console.WriteLine("Original");
-            printGraph(g);
-            Console.WriteLine("xxxxxxxxxxxx");
+            Graph g = geraGraficoTeste3();
 
             if (isAFD(g))
             {
@@ -625,72 +621,6 @@ namespace Projeto3
             return g; 
         }
 
-        static Graph geraGraficoTeste2()
-        {
-            Graph g = new Graph("Mini");
-
-            Node n0 = new Node();
-            n0.initial = true;
-
-            Node n1 = new Node();
-            Node n2 = new Node();
-            n2.final = true;
-            Node n3 = new Node();
-            n3.final = true;
-            Node n4 = new Node();
-            n4.final = true;
-            Node n5 = new Node();
-
-
-            Edge e = new Edge(n0, n3, 'a');
-            n0.AddEdge(e);
-
-            e = new Edge(n0, n1, 'b');
-            n0.AddEdge(e);
-
-            e = new Edge(n1, n2, 'a');
-            n1.AddEdge(e);
-
-            e = new Edge(n1, n0, 'b');
-            n1.AddEdge(e);
-
-            e = new Edge(n2, n4, 'b');
-            n2.AddEdge(e);
-
-            e = new Edge(n2, n5, 'a');
-            n2.AddEdge(e);
-
-            e = new Edge(n3, n5, 'a');
-            n3.AddEdge(e);
-
-            e = new Edge(n3, n4, 'b');
-            n3.AddEdge(e);
-
-            e = new Edge(n4, n5, 'a');
-            n4.AddEdge(e);
-
-            e = new Edge(n4, n4, 'b');
-            n4.AddEdge(e);
-
-            e = new Edge(n5, n5, 'a');
-            n5.AddEdge(e);
-
-            e = new Edge(n5, n5, 'b');
-            n5.AddEdge(e);
-
-            g.AddNode(n0);
-            g.AddNode(n1);
-            g.AddNode(n2);
-            g.AddNode(n3);
-            g.AddNode(n4);
-            g.AddNode(n5);
-
-            letras.Add('a');
-            letras.Add('b');
-
-            return g;
-        }
-
         static Graph geraGraficoTeste3()
         {
             Graph g = new Graph("Mini");
@@ -703,6 +633,7 @@ namespace Projeto3
             Node q5 = new Node("q5");
 
             q0.initial = true;
+            q0.final = true;
             q4.final = true;
             q5.final = true;
 
@@ -762,26 +693,16 @@ namespace Projeto3
             removeInacessiveis(g);
             apontaParaD(g);
             List<Pair> pairs = primeiraParte(g);
-            Console.WriteLine("Pairs");
-            printPairs(pairs);
 
             List<Pair> pairs_to_remove = segundaParte(g, pairs);
-            Console.WriteLine("pairs_to_remove");
-            printPairs(pairs_to_remove);
 
-            List<Pair> pairs2 = new List<Pair>();
-            pairs2.AddRange(pairs.Where(p => !pairs_to_remove.Any(p2 => p2 == p)));
-            Console.WriteLine("Pairs2");
-            printPairs(pairs2);
+            removePairs(pairs, pairs_to_remove);
 
-            g2.nodes = pairToNode(g, pairs2);
+            g2.nodes = pairToNode(g, pairs);
 
-            printGraph(g2);
-
-
-            // TODO: descobrir se é necessário
             g2.nodes = removeUselessNodes(g2.nodes);
 
+            Console.WriteLine("\n" + g2.name + "\n");
             printGraph(g2);
 
         }
@@ -897,18 +818,6 @@ namespace Projeto3
             }
         }
 
-        static void miniminiza2(Graph g)
-        {
-            Graph g2 = new Graph("Minimizado");
-
-            removeInacessiveis(g);
-            apontaParaD(g);
-            List<Pair> pairs = primeiraParte(g);
-            List<Pair> pairs_to_remove = segundaParte(g, pairs);
-            removePairs(pairs, pairs_to_remove);
-            printGraph(g);
-        }
-
         static List<Pair> primeiraParte(Graph g)
         {
             List<Node> listaColuna = g.nodes.GetRange(1, g.nodes.Count - 1);
@@ -954,7 +863,7 @@ namespace Projeto3
                                 pairs_to_remove.Add(p);
                             }
                             break;
-                        } else if(!isPair(p, new_pair))
+                        } else if(!isPair(p, new_pair) && new_pair.node1 != new_pair.node2 && !listContainsPair(p.listPairs, new_pair))
                         {
                             p.listPairs.Add(new_pair);
                         }
@@ -1001,17 +910,13 @@ namespace Projeto3
                 }
             }
 
-            new_Nodes.AddRange(g.nodes.Except(used).ToList());
-
             new_Nodes = addEdges(g, new_Nodes);
 
-            foreach (Node n in new_Nodes)
-            {
-                Console.WriteLine(n.name);
-                Console.WriteLine("Inicial " + n.initial.ToString());
-                Console.WriteLine("Final " + n.final.ToString());
-                Console.WriteLine();
-            }            
+            List<Node> old_Nodes = g.nodes.Except(used).ToList();
+
+            old_Nodes = alterOldEdges(g, new_Nodes, old_Nodes);
+
+            new_Nodes.AddRange(g.nodes.Except(used).ToList());            
 
             return new_Nodes;
         }
@@ -1032,26 +937,53 @@ namespace Projeto3
                 {
                     foreach (Edge e in n2.edges)
                     {
-                        foreach(char c in letras)
+                        Node new_to = nodes.FirstOrDefault(p => p.name.Contains(e.to.name));
+                        if (new_to != null)
                         {
-                            Node new_to = nodes.FirstOrDefault(p => p.name.Contains(e.to.name));
-                            if(new_to != null)
+                            Edge new_edge = new Edge(n, new_to, e.value);
+                            if (!listContainsEdge(new_edges, new_edge))
                             {
-                                Edge new_edge = new Edge(n, new_to, c);
-                                if (!listContainsEdge(new_edges, new_edge))
-                                {
-                                    new_edges.Add(new_edge);
-                                }
+                                new_edges.Add(new_edge);
                             }
                         }
                     }
                 }
 
-                n.edges.AddRange(new_edges);
+                if (n.edges.Count == 0)
+                    n.edges.AddRange(new_edges);
+
+                else
+                    n.edges = new_edges;
+
+
+                //n.edges = removeOldEdges(n.edges, nodes);
 
                 n.edges = removeDuplicates(n.edges);
             }
             return nodes;
+        }
+
+        static List<Node> alterOldEdges(Graph g, List<Node> new_Nodes, List<Node> old_Nodes)
+        {
+            foreach(Node n in old_Nodes)
+            {
+                foreach(Edge e in n.edges)
+                {
+                    if (!old_Nodes.Contains(e.to))
+                    {
+                        foreach(Node nn in new_Nodes)
+                        {
+                            List<string> list_nodes_names = nn.name.Split(',').ToList();
+                            if (list_nodes_names.Contains(e.to.name))
+                            {
+                                e.to = nn;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return old_Nodes;
         }
 
         static bool listContainsEdge(List<Edge> list, Edge edge)
@@ -1230,15 +1162,6 @@ namespace Projeto3
             }
 
             return useful;
-        }
-
-        static void printPairs(List<Pair> pairs)
-        {
-            foreach (Pair p in pairs)
-            {
-                Console.WriteLine(p.node1.name + " - " + p.node2.name);
-            }
-            Console.WriteLine();
         }
     }
 }

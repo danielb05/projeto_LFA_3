@@ -21,5 +21,10 @@ namespace Projeto3
             this.node2 = node2;
             this.listPairs = new List<Pair>();
         }
+
+        public void printPair()
+        {
+            Console.WriteLine(node1.name + " - " + node2.name);
+        }
     }
 }
