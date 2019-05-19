@@ -17,17 +17,6 @@ namespace Projeto3
         {
             bool repeatProg = true;
 
-            Graph g = geraGraficoTeste3();
-
-            if (isAFD(g))
-            {
-                miniminiza(g);
-            }
-            else
-            {
-                Console.WriteLine("O gráfico não é um AFD");
-            }
-
             while (repeatProg)
             {
                 string regex = "";
@@ -40,12 +29,27 @@ namespace Projeto3
                 string posfixa = Converter(regex);
 
                 Graph result = Calcular(posfixa);
-                Console.WriteLine("GRAFO AFE\n");
+                Console.WriteLine("\nGRAFO AFE\n");
                 printGraph(result);
 
                 Graph afd = buildAFD(result);
-                Console.WriteLine("GRAFO AFD\n");
+                Console.WriteLine("\nGRAFO AFD\n");
                 printGraph(afd);
+
+                //Graph g = geraGraficoTeste3();
+                //printGraph(g);
+
+                if (isAFD(afd))
+                {
+                    //Graph minimizado = miniminiza(geraGraficoTeste3());
+                    Graph minimizado = miniminiza(afd);
+                    Console.WriteLine("\nGRAFO MINIMIZADO\n");
+                    printGraph(minimizado);
+                }
+                else
+                {
+                    Console.WriteLine("O gráfico não é um AFD");
+                }
 
                 if (repeatProg = NovaOperacao())
                 {
@@ -621,6 +625,61 @@ namespace Projeto3
             return g; 
         }
 
+        static Graph geraGraficoTeste2()
+        {
+            Graph g = new Graph("Mini");
+
+            Node q0 = new Node("q0");
+            Node q1 = new Node("q1");
+            Node q2 = new Node("q2");
+            Node q3 = new Node("q3");
+            Node q4 = new Node("q4");
+
+            q0.initial = true;
+            q4.final = true;
+
+            Edge e = new Edge(q0, q2, 'a');
+            q0.AddEdge(e);
+
+            e = new Edge(q0, q1, 'b');
+            q0.AddEdge(e);
+
+            e = new Edge(q1, q3, 'a');
+            q1.AddEdge(e);
+
+            e = new Edge(q1, q1, 'b');
+            q1.AddEdge(e);
+
+            e = new Edge(q2, q2, 'a');
+            q2.AddEdge(e);
+
+            e = new Edge(q2, q1, 'b');
+            q2.AddEdge(e);
+
+            e = new Edge(q3, q4, 'a');
+            q3.AddEdge(e);
+
+            e = new Edge(q3, q1, 'b');
+            q3.AddEdge(e);
+
+            e = new Edge(q4, q2, 'a');
+            q4.AddEdge(e);
+
+            e = new Edge(q4, q1, 'b');
+            q4.AddEdge(e);
+
+            g.AddNode(q0);
+            g.AddNode(q1);
+            g.AddNode(q2);
+            g.AddNode(q3);
+            g.AddNode(q4);
+
+            letras.Add('a');
+            letras.Add('b');
+
+            return g;
+        }
+
         static Graph geraGraficoTeste3()
         {
             Graph g = new Graph("Mini");
@@ -686,7 +745,7 @@ namespace Projeto3
             return g;
         }
 
-        static void miniminiza(Graph g)
+        static Graph miniminiza(Graph g)
         {
             Graph g2 = new Graph("Minimizado");
 
@@ -702,8 +761,7 @@ namespace Projeto3
 
             g2.nodes = removeUselessNodes(g2.nodes);
 
-            Console.WriteLine("\n" + g2.name + "\n");
-            printGraph(g2);
+            return g2;
 
         }
 
@@ -775,20 +833,21 @@ namespace Projeto3
 
         // Verifica se o Grafico é uma função programa total
         // Retorna um dicionario com o nó como chave a letra faltando como valor
-        static Dictionary<Node, char> isTotal(Graph g)
+        static List<Edge> isTotal(Graph g)
         {
-            var nodes = new Dictionary<Node, char>();
+            var edges = new List<Edge>();
             foreach (Node n in g.nodes)
             {
                 foreach(char c in letras)
                 {
-                    if((n.edges.Find(e => e.value == c)) == null)
+                    if (n.edges.Find(e => e.value == c) == null)
                     {
-                        nodes.Add(n, c);
+                        Edge x = new Edge(n, n, c);
+                        edges.Add(x);
                     }
                 }
             }
-            return nodes;
+            return edges;
         }
 
         // Cria estado d
@@ -806,14 +865,15 @@ namespace Projeto3
         // Se não possuir pelo menos um edge com cada letra do alfabeto, apontar para d com cada letra faltante
         static void apontaParaD(Graph g)
         {
-            var nodes = isTotal(g);
-            if(nodes.Count > 0)
+            var edges = isTotal(g);
+            if(edges.Count > 0)
             {
                 addEstadoD(g);
                 Node nodeD = g.findNode("D");
-                foreach (KeyValuePair<Node, char> entry in nodes)
+                foreach (Edge entry in edges)
                 {
-                    entry.Key.AddEdge(new Edge(entry.Key, nodeD, entry.Value));
+                    entry.to = nodeD;
+                    entry.from.edges.Add(entry);
                 }
             }
         }
@@ -910,9 +970,9 @@ namespace Projeto3
                 }
             }
 
-            new_Nodes = addEdges(g, new_Nodes);
-
             List<Node> old_Nodes = g.nodes.Except(used).ToList();
+
+            new_Nodes = addEdges(g, new_Nodes, old_Nodes);
 
             old_Nodes = alterOldEdges(g, new_Nodes, old_Nodes);
 
@@ -921,15 +981,13 @@ namespace Projeto3
             return new_Nodes;
         }
 
-        static List<Node> addEdges(Graph g, List<Node> nodes)
+        static List<Node> addEdges(Graph g, List<Node> nodes, List<Node> old_nodes)
         {
             foreach(Node n in nodes)
             {
-                List<Node> list_nodes = new List<Node>();
-
                 List<string> list_nodes_names = n.name.Split(',').ToList();
 
-                list_nodes = g.nodes.Where(p => list_nodes_names.Any(l => p.name == l)).ToList();
+                List<Node> list_nodes = g.nodes.Where(p => list_nodes_names.Any(l => p.name == l)).ToList();
 
                 List<Edge> new_edges = new List<Edge>();
 
@@ -944,6 +1002,18 @@ namespace Projeto3
                             if (!listContainsEdge(new_edges, new_edge))
                             {
                                 new_edges.Add(new_edge);
+                            }
+                        }
+                        else
+                        {
+                            new_to = old_nodes.FirstOrDefault(p => p.name.Contains(e.to.name));
+                            if (new_to != null)
+                            {
+                                Edge new_edge = new Edge(n, new_to, e.value);
+                                if (!listContainsEdge(new_edges, new_edge))
+                                {
+                                    new_edges.Add(new_edge);
+                                }
                             }
                         }
                     }
@@ -1140,7 +1210,7 @@ namespace Projeto3
 
             foreach (Node n in nodes)
             {
-                if (!n.final)
+                if (!n.final && !n.initial)
                 {
                     int count = 0;
                     foreach (Edge e in n.edges)
@@ -1160,8 +1230,25 @@ namespace Projeto3
                     useful.Add(n);
                 }
             }
-
+            useful = removeUselessEdges(useful);
             return useful;
+        }
+
+        static List<Node> removeUselessEdges(List<Node> nodes)
+        {
+            foreach (Node n in nodes)
+            {
+                List<Edge> useful = new List<Edge>();
+                foreach (Edge e in n.edges)
+                {
+                    if (nodes.Contains(e.to))
+                    {
+                        useful.Add(e);
+                    }
+                }
+                n.edges = useful;
+            }
+            return nodes;
         }
     }
 }
